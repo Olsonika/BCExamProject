@@ -1,11 +1,11 @@
 tableextension 50100 "Item Table Ext" extends Item
 {
-    trigger OnAfterInsert()
+    /*trigger OnAfterInsert()
     var
         WooCommerce: Codeunit WooCommerce;
     begin
-        if Rec.Description <> '' then begin
+        if Description <> '' then begin
             WooCommerce.NewProduct(Rec);
         end;
-    end;
+    end;*/
 }
