@@ -5,6 +5,30 @@ codeunit 50107 WooCommerce
         Ck: Label 'ck_1cf31c0049854b21f89c3b894feb8020c9d56788';
         Cs: Label 'cs_dc1ae3b13e6cbaf56c5ae6b19fd90d154b4b3467';
 
+    procedure NewSalesOrder(Name: Text) result: Text
+    var
+        SalesHeader: Record "Sales Header";
+        Customer: Record Customer;
+    begin
+        // Check if the customer exists
+        Customer.SetRange(Customer.Name, Name);
+        if Customer.FindFirst() then begin
+            SalesHeader.Init();
+            SalesHeader."Document Type" := SalesHeader."Document Type"::Order;
+            SalesHeader."Sell-to Customer No." := Customer."No.";
+            SalesHeader."Sell-to Customer Name" := Customer.Name;
+
+            // Insert the Sales Header record
+            if SalesHeader.Insert() then begin
+                result := 'Inserted';
+            end else begin
+                result := 'Couldnt insert';
+            end;
+        end else begin
+            result := 'Customer not found';
+        end;
+    end;
+
     procedure NewCustomer(Name: Text; Email: Text) result: Boolean
     var
         customerRec: Record Customer;
