@@ -10,7 +10,6 @@ codeunit 50107 WooCommerce
         SalesHeader: Record "Sales Header";
         Customer: Record Customer;
     begin
-        // Check if the customer exists
         Customer.SetRange(Customer.Name, Name);
         if Customer.FindFirst() then begin
             SalesHeader.Init();
@@ -18,7 +17,6 @@ codeunit 50107 WooCommerce
             SalesHeader."Sell-to Customer No." := Customer."No.";
             SalesHeader."Sell-to Customer Name" := Customer.Name;
 
-            // Insert the Sales Header record
             if SalesHeader.Insert() then begin
                 result := 'Inserted';
             end else begin
@@ -58,6 +56,8 @@ codeunit 50107 WooCommerce
         SetAuth();
         JsonBody.Add('name', Item.Description);
         JsonBody.Add('regular_price', Format(Item."Unit Price"));
+        JsonBody.Add('manage_stock', true);
+        JsonBody.Add('stock_quantity', Item.Inventory);
         JsonBody.WriteTo(Body);
 
         Message('Request Body: %1', Body);
