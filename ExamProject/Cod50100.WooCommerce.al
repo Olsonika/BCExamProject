@@ -5,10 +5,14 @@ codeunit 50107 WooCommerce
         Ck: Label 'ck_1cf31c0049854b21f89c3b894feb8020c9d56788';
         Cs: Label 'cs_dc1ae3b13e6cbaf56c5ae6b19fd90d154b4b3467';
 
-    procedure NewSalesOrder(Name: Text) result: Text
+    procedure NewSalesOrder(Name: Text; OrderNo: Code[20]; ItemNo: Code[20]; Quantity: Integer) result: Text
     var
         SalesHeader: Record "Sales Header";
+        SalesLine: Record "Sales Line";
         Customer: Record Customer;
+        Item: Record Item;
+        customerMail: Text;
+        confirmation: Codeunit "Send Mail";
     begin
         Customer.SetRange(Customer.Name, Name);
         if Customer.FindFirst() then begin
@@ -16,18 +20,36 @@ codeunit 50107 WooCommerce
             SalesHeader."Document Type" := SalesHeader."Document Type"::Order;
             SalesHeader."Sell-to Customer No." := Customer."No.";
             SalesHeader."Sell-to Customer Name" := Customer.Name;
+            SalesHeader."No." := OrderNo;
+            customerMail := Customer."E-Mail";
 
             if SalesHeader.Insert() then begin
                 result := 'Inserted';
+                confirmation.SendConfMail(customerMail);
+                Item.SetRange(Item."No.", ItemNo);
+                if Item.FindFirst() then begin
+                    SalesLine.Init();
+                    SalesLine."Document Type" := SalesHeader."Document Type";
+                    SalesLine."Document No." := SalesHeader."No.";
+                    SalesLine."Line No." := SalesLine.Count * 10000 + 10000;
+                    SalesLine."Type" := SalesLine."Type"::Item;
+                    SalesLine."No." := Item."No.";
+                    SalesLine.Quantity := 1;
+                    if SalesLine.Insert() then begin
+                        result := 'Inserted';
+                    end else begin
+                        result := 'Couldnt insert salesline';
+                    end;
+                end else begin
+                    result := 'Couldnt insert salesheader';
+                end;
             end else begin
-                result := 'Couldnt insert';
+                result := 'Customer not found';
             end;
-        end else begin
-            result := 'Customer not found';
         end;
     end;
 
-    procedure NewCustomer(Name: Text; Email: Text) result: Boolean
+    procedure NewCustomer(Name: Text; Email: Text; No: Code[20]) result: Boolean
     var
         customerRec: Record Customer;
         welcome: Codeunit "Send Mail";
@@ -35,6 +57,8 @@ codeunit 50107 WooCommerce
         customerRec.Init();
         customerRec.Validate(Name, Name);
         customerRec.Validate("E-Mail", Email);
+        customerRec."No." := No;
+
 
         if not customerRec.Insert() then begin
             result := false;
