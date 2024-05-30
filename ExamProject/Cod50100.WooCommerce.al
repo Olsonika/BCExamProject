@@ -11,7 +11,6 @@ codeunit 50107 WooCommerce
         SalesLine: Record "Sales Line";
         Customer: Record Customer;
         Item: Record Item;
-        customerMail: Text;
         confirmation: Codeunit "Send Mail";
     begin
         Customer.SetRange(Customer.Name, Name);
@@ -21,11 +20,10 @@ codeunit 50107 WooCommerce
             SalesHeader."Sell-to Customer No." := Customer."No.";
             SalesHeader."Sell-to Customer Name" := Customer.Name;
             SalesHeader."No." := OrderNo;
-            customerMail := Customer."E-Mail";
 
             if SalesHeader.Insert() then begin
                 result := 'Inserted';
-                confirmation.SendConfMail(customerMail);
+                confirmation.SendConfMail(Customer);
                 Item.SetRange(Item."No.", ItemNo);
                 if Item.FindFirst() then begin
                     SalesLine.Init();
@@ -34,7 +32,7 @@ codeunit 50107 WooCommerce
                     SalesLine."Line No." := SalesLine.Count * 10000 + 10000;
                     SalesLine."Type" := SalesLine."Type"::Item;
                     SalesLine."No." := Item."No.";
-                    SalesLine.Quantity := 1;
+                    SalesLine.Quantity := Quantity;
                     if SalesLine.Insert() then begin
                         result := 'Inserted';
                     end else begin
@@ -92,7 +90,6 @@ codeunit 50107 WooCommerce
         CreateHttpRequestMessage('POST', Url, Body, Request);
 
         if Client.Send(Request, Response) then begin
-            //JsonBody := GetBodyAsJsonObject(Response);
             if Response.IsSuccessStatusCode then begin
                 Message('Status code OK, Product added to WC');
             end
