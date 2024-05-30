@@ -69,11 +69,11 @@ codeunit 50108 Daily
             end;
         end;
 
-        EmailBody := 'Sales Overview for the Last 24 Hours:\n\n';
+        EmailBody := 'Sales Overview for the Last 24 Hours:';
         for i := 0 to ProductCount - 1 do
-            EmailBody += StrSubstNo('%1: %2 units sold\n', ProductSales[i]."No.", ProductSales[i].Quantity);
+            EmailBody += StrSubstNo('%1: %2 units sold', ProductSales[i]."No.", ProductSales[i].Quantity);
 
-        EmailBody += StrSubstNo('\nTotal Turnover: %1', Format(TotalTurnover));
+        EmailBody += StrSubstNo('Total Turnover: %1', Format(TotalTurnover));
 
         EmailMessage.Create('alekur01@easv365.dk', 'Daily turnover', EmailBody);
 
